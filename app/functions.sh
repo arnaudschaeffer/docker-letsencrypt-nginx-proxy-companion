@@ -205,7 +205,8 @@ function docker_api {
         scheme="http://${DOCKER_HOST#*://}"
     fi
     [[ $method = "POST" ]] && curl_opts+=(-H 'Content-Type: application/json')
-    curl "${curl_opts[@]}" -X "${method}" "${scheme}$1"
+    echo "${curl_opts[@]} ${DOCKER_OPTS}" -X "${method}" "${scheme}$1"
+    curl "${curl_opts[@]} ${DOCKER_OPTS}" -X "${method}" "${scheme}$1"
 }
 
 function docker_exec {
