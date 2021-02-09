@@ -202,11 +202,14 @@ function docker_api {
         curl_opts+=(--unix-socket "${DOCKER_HOST#unix://}")
         scheme='http://localhost'
     else
-        scheme="http://${DOCKER_HOST#*://}"
+        scheme="${LE_DOCKER_HOST}"
+        curl_opts+=(--cacert /home/ubuntu/.docker/ca.pem)
+        curl_opts+=(--key /home/ubuntu/.docker/key.pem)
+        curl_opts+=( --cert /home/ubuntu/.docker/cert.pem)
     fi
     [[ $method = "POST" ]] && curl_opts+=(-H 'Content-Type: application/json')
-    echo "${curl_opts[@]} ${DOCKER_OPTS}" -X "${method}" "${scheme}$1"
-    curl "${curl_opts[@]} ${DOCKER_OPTS}" -X "${method}" "${scheme}$1"
+    echo "${curl_opts[@]}" -X "${method}" "${scheme}$1"
+    curl "${curl_opts[@]}" -X "${method}" "${scheme}$1"
 }
 
 function docker_exec {
