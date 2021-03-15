@@ -26,9 +26,12 @@ LABEL maintainer="Nicolas Duchon <nicolas.duchon@gmail.com> (@buchdag)"
 ARG GIT_DESCRIBE
 ARG ACMESH_VERSION=2.8.8
 
+ARG ACMESH_PATH=/home/acme.sh
+
 ENV COMPANION_VERSION=$GIT_DESCRIBE \
     DOCKER_HOST=unix:///var/run/docker.sock \
-    PATH=$PATH:/app
+    PATH=$PATH:/app \
+    DOCKER_CERT_PATH=$DOCKER_CERT_PATH:/home/ubuntu/.docker
 
 # Install packages required by the image
 RUN apk add --no-cache --virtual .bin-deps \
@@ -43,11 +46,11 @@ RUN apk add --no-cache --virtual .bin-deps \
 COPY --from=go-builder /usr/local/bin/docker-gen /usr/local/bin/
 
 # Install acme.sh
-COPY /install_acme.sh /app/install_acme.sh
-RUN chmod +rx /app/install_acme.sh \
-    && sync \
-    && /app/install_acme.sh \
-    && rm -f /app/install_acme.sh
+#COPY /install_acme.sh "/${ACMESH_PATH}/install_acme.sh"
+#RUN chmod +rx "/${ACMESH_PATH}/install_acme.sh" \
+#    && sync \
+#    && /app/install_acme.sh \
+#    && rm -f "/${ACMESH_PATH}/install_acme.sh"
 
 COPY /app/ /app/
 

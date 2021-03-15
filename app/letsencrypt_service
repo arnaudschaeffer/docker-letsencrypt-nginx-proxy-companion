@@ -177,10 +177,10 @@ function update_cert {
     fi
     if [[ -n "${accountemail// }" ]]; then
         # If we got an email, use it with the corresponding config home
-        config_home="/etc/acme.sh/$accountemail"
+        config_home="${ACMESH_PATH}/$accountemail"
     else
         # If we did not get any email at all, use the default (empty mail) config
-        config_home="/etc/acme.sh/default"
+        config_home="${ACMESH_PATH}/default"
     fi 
 
     local -n acme_ca_uri="ACME_${cid}_CA_URI"
@@ -207,7 +207,7 @@ function update_cert {
         # Unset accountemail
         # force config dir to 'staging'
         unset accountemail
-        config_home="/etc/acme.sh/staging"
+        config_home="${ACMESH_PATH}/staging"
         # Prefix test certificate directory with _test_
         certificate_dir="/etc/nginx/certs/_test_$base_domain"
     else
@@ -277,13 +277,13 @@ function update_cert {
     # Account registration and update if required
     if [[ ! -f "$account_file" ]]; then
         params_register_arr=("${params_base_arr[@]}" "${params_register_arr[@]}")
-        [[ "$DEBUG" == 1 ]] && echo "Calling acme.sh --register-account with the following parameters : ${params_register_arr[*]}"
-        acme.sh --register-account "${params_register_arr[@]}"
+        [[ "$DEBUG" == 1 ]] && echo "Calling ${ACMESH_PATH}/acme.sh --register-account with the following parameters : ${params_register_arr[*]}"
+        . ${ACMESH_PATH}/acme.sh --register-account "${params_register_arr[@]}"
     fi
     if [[ -n "${accountemail// }" ]] && ! grep -q "mailto:$accountemail" "$account_file"; then
         local -a params_update_arr=("${params_base_arr[@]}" --accountemail "$accountemail")
-        [[ "$DEBUG" == 1 ]] && echo "Calling acme.sh --update-account with the following parameters : ${params_update_arr[*]}"
-        acme.sh --update-account "${params_update_arr[@]}"
+        [[ "$DEBUG" == 1 ]] && echo "Calling ${ACMESH_PATH}/acme.sh --update-account with the following parameters : ${params_update_arr[*]}"
+        . ${ACMESH_PATH}/acme.sh --update-account "${params_update_arr[@]}"
     fi
 
     # If we still don't have an account.json file by this point, we've got an issue
@@ -314,9 +314,9 @@ function update_cert {
     done
 
     params_issue_arr=("${params_base_arr[@]}" "${params_issue_arr[@]}")
-    [[ "$DEBUG" == 1 ]] && echo "Calling acme.sh --issue with the following parameters : ${params_issue_arr[*]}"
+    [[ "$DEBUG" == 1 ]] && echo "Calling ${ACMESH_PATH}/acme.sh --issue with the following parameters : ${params_issue_arr[*]}"
     echo "Creating/renewal $base_domain certificates... (${hosts_array[*]})"
-    acme.sh --issue "${params_issue_arr[@]}"
+    . ${ACMESH_PATH}/acme.sh --issue "${params_issue_arr[@]}"
 
     local acmesh_return=$?
 

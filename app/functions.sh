@@ -201,9 +201,20 @@ function docker_api {
     if [[ $DOCKER_HOST == unix://* ]]; then
         curl_opts+=(--unix-socket "${DOCKER_HOST#unix://}")
         scheme='http://localhost'
+    elif [[ $DOCKER_HOST == https://* || $DOCKER_HOST == tcp://* || $DOCKER_HOST == http://* ]]; then
+        scheme="${DOCKER_HOST}"
     else
         scheme="http://${DOCKER_HOST#*://}"
     fi
+
+    if [[ -f "$DOCKER_CERT_PATH/ca.pem" ]] && [[ -f "$DOCKER_CERT_PATH/key.pem" ]] && [[ -f "$DOCKER_CERT_PATH/cert.pem" ]];then
+        curl_opts+=(--cacert "${DOCKER_CERT_PATH}/ca.pem")
+        curl_opts+=(--key "${DOCKER_CERT_PATH}/key.pem")
+        curl_opts+=(--cert "${DOCKER_CERT_PATH}/cert.pem")
+        scheme=$(echo "$scheme" | sed "s/http/https/")
+        scheme=$(echo "$scheme" | sed "s/tcp/https/")
+    fi
+
     [[ $method = "POST" ]] && curl_opts+=(-H 'Content-Type: application/json')
     curl "${curl_opts[@]}" -X "${method}" "${scheme}$1"
 }

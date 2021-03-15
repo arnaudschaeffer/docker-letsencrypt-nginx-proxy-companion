@@ -24,18 +24,18 @@ function check_docker_socket {
 
 function check_writable_directory {
     local dir="$1"
-    if [[ $(get_self_cid) ]]; then
-        if ! docker_api "/containers/$(get_self_cid)/json" | jq ".Mounts[].Destination" | grep -q "^\"$dir\"$"; then
-            echo "Warning: '$dir' does not appear to be a mounted volume."
-        fi
-    else
-        echo "Warning: can't check if '$dir' is a mounted volume without self container ID."
-    fi
-    if [[ ! -d "$dir" ]]; then
-        echo "Error: can't access to '$dir' directory !" >&2
-        echo "Check that '$dir' directory is declared as a writable volume." >&2
-        exit 1
-    fi
+#    if [[ $(get_self_cid) ]]; then
+#        if ! docker_api "/containers/$(get_self_cid)/json" | jq ".Mounts[].Destination" | grep -q "^\"$dir\"$"; then
+#            echo "Warning: '$dir' does not appear to be a mounted volume."
+#        fi
+#    else
+#        echo "Warning: can't check if '$dir' is a mounted volume without self container ID."
+#    fi
+#    if [[ ! -d "$dir" ]]; then
+#        echo "Error: can't access to '$dir' directory !" >&2
+#        echo "Check that '$dir' directory is declared as a writable volume." >&2
+#        exit 1
+#    fi
     if ! touch "$dir/.check_writable" 2>/dev/null ; then
         echo "Error: can't write to the '$dir' directory !" >&2
         echo "Check that '$dir' directory is export as a writable volume." >&2
@@ -135,9 +135,9 @@ function check_default_cert_key {
 
 function check_default_account {
     # The default account is now for empty account email
-    if [[ -f /etc/acme.sh/default/account.conf ]]; then
-        if grep -q ACCOUNT_EMAIL /etc/acme.sh/default/account.conf; then
-            sed -i '/ACCOUNT_EMAIL/d' /etc/acme.sh/default/account.conf
+    if [[ -f "${ACMESH_PATH}/default/account.conf" ]]; then
+        if grep -q ACCOUNT_EMAIL "${ACMESH_PATH}/default/account.conf"; then
+            sed -i '/ACCOUNT_EMAIL/d' "${ACMESH_PATH}/default/account.conf"
         fi
     fi
 }
@@ -161,7 +161,7 @@ if [[ "$*" == "/bin/bash /app/start.sh" ]]; then
     fi
     check_writable_directory '/etc/nginx/certs'
     check_writable_directory '/etc/nginx/vhost.d'
-    check_writable_directory '/etc/acme.sh'
+    check_writable_directory "${ACMESH_PATH}"
     check_writable_directory '/usr/share/nginx/html'
     [[ -f /app/letsencrypt_user_data ]] && check_writable_directory '/etc/nginx/conf.d'
     check_default_cert_key
